@@ -25,7 +25,7 @@ def lambda_handler(event, context):
                 Source=os.environ['ALERT_EMAIL_FROM'],
                 Destination={'ToAddresses': [email]},
                 Message={
-                    'Subject': {'Data': f'🚨 Alert from {service}'},
+                    'Subject': {'Data': f' Alert from {service}'},
                     'Body': {'Text': {'Data': f'{log_level} detected: {message}\nTimestamp: {timestamp}'}}
                 }
             )
