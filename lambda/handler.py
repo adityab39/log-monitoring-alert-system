@@ -19,6 +19,31 @@ def lambda_handler(event, context):
         email = body.get('customerEmail')
         service = body.get('service', 'Unknown Service')
         timestamp = body.get('timestamp', datetime.utcnow().isoformat())
+
+        if any(keyword in log_level or keyword in message.upper() for keyword in ALERT_KEYWORDS):
+            ses.send_email(
+                Source=os.environ['ALERT_EMAIL_FROM'],
+                Destination={'ToAddresses': [email]},
+                Message={
+                    'Subject': {'Data': f'🚨 Alert from {service}'},
+                    'Body': {'Text': {'Data': f'{log_level} detected: {message}\nTimestamp: {timestamp}'}}
+                }
+            )
+
+            table.put_item(Item={
+                'id': f"{email}_{datetime.utcnow().timestamp()}",
+                'email': email,
+                'service': service,
+                'level': log_level,
+                'message': message,
+                'timestamp': timestamp
+            })
+
+        return {
+            'statusCode': 200,
+            'body': json.dumps({'status': 'Processed'})
+        }
+    
     except Exception as e:
         print(f"Error: {str(e)}")
         return {
