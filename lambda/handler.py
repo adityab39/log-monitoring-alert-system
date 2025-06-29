@@ -9,12 +9,10 @@ ses = boto3.client('ses')
 dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table(os.environ['ALERTS_TABLE'])
 
-# Keywords that will trigger an alert
 ALERT_KEYWORDS = ["ERROR", "CRITICAL", "FAILURE"]
 
 def lambda_handler(event, context):
     try:
-        # Log and parse the incoming request body
         print("Received event:", json.dumps(event))
         body = event.get('body')
         if body:
@@ -25,16 +23,13 @@ def lambda_handler(event, context):
                 'body': json.dumps({'error': 'Missing body'})
             }
 
-        # Extract required fields
         log_level = body.get('log_level', '').upper()
         message = body.get('message', '')
         email = body.get('email')
         service = body.get('service', 'Unknown Service')
         timestamp = body.get('timestamp', datetime.utcnow().isoformat())
 
-        # Check for alert keywords
         if any(keyword in log_level or keyword in message.upper() for keyword in ALERT_KEYWORDS):
-            # Send email alert via SES
             ses.send_email(
                 Source=os.environ['ALERT_EMAIL_FROM'],
                 Destination={'ToAddresses': [email]},
@@ -44,7 +39,6 @@ def lambda_handler(event, context):
                 }
             )
 
-            # Write to DynamoDB
             response = table.put_item(Item={
                 'id': str(uuid.uuid4()),
                 'email': email,
@@ -54,7 +48,6 @@ def lambda_handler(event, context):
                 'timestamp': timestamp
             })
 
-            print("DynamoDB write response:", response)
 
         return {
             'statusCode': 200,
