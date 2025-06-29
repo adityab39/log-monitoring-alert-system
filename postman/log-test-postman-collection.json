@@ -1,0 +1,7 @@
+{
+  "service": "MyApp",
+  "level": "CRITICAL",
+  "message": "Test error from Postman",
+  "customerEmail": "your_verified_email@example.com",
+  "timestamp": "2025-06-27T22:30:00Z"
+}
